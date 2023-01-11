@@ -1,21 +1,15 @@
 {
   "version": "2.0",
-  "logging": {
-    "applicationInsights": {
-      "samplingSettings": {
-        "isEnabled": true,
-        "excludedTypes": "Request"
-      }
-    }
-  },
   "extensionBundle": {
     "id": "Microsoft.Azure.Functions.ExtensionBundle",
-    "version": "[3.*, 4.0.0)"
+    "version": "[4.0.0, 5.0.0)"
   },
   "customHandler": {
     "description": {
+      //"defaultExecutablePath": "/usr/bin/dotnet",
+      //"arguments": ["run"]
       "defaultExecutablePath": "bin/Release/net7.0/linux-x64/publish/func-cs-nativeaot"
     },
-    "enableForwardingHttpRequest": false
+    "enableForwardingHttpRequest": true
   }
 }
