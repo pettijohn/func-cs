@@ -14,9 +14,8 @@
   },
   "customHandler": {
     "description": {
-      "defaultExecutablePath": "",
-      "workingDirectory": "",
-      "arguments": []
-    }
+      "defaultExecutablePath": "bin/Release/net7.0/linux-x64/publish/func-cs-nativeaot"
+    },
+    "enableForwardingHttpRequest": false
   }
 }
