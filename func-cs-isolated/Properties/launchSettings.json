@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "func_cs_isolated": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7297",
+      "launchBrowser": false
+    }
+  }
+}
