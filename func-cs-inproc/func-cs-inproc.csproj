@@ -17,4 +17,7 @@
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\shared-logic\shared-logic.csproj" />
+  </ItemGroup>
 </Project>
