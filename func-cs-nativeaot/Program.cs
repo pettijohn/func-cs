@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net;
+using System.Net.Cache;
 
 public class Program
 {
@@ -21,25 +22,18 @@ public class Program
 
             while (listener.IsListening)
             {
-
                 // // Note: The GetContext method blocks while waiting for a request.
                 HttpListenerContext context = listener.GetContext();
                 Console.WriteLine("➡️ Request received");
                 HttpListenerRequest request = context.Request;
-                using (var s = request.InputStream)
-                {
-                    int b = -1;
-                    do
-                    {
-                        b = s.ReadByte();
+                Console.WriteLine($"➡️ Raw URL: {request.RawUrl}");
+                Console.WriteLine($"➡️ Method: {request.HttpMethod}");
 
-                    } while (b != -1);
-                }
                 // // Obtain a response object.
                 HttpListenerResponse response = context.Response;
                 // // Construct a response.
                 response.StatusCode = 200;
-                Console.WriteLine("➡️ Status code set");
+                // Console.WriteLine("➡️ Status code set");
                 string responseString = shared_logic.ClassThatDoesSomeWork.DoTheWork();
                 byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
                 // Get a response stream and write the response to it.
@@ -54,6 +48,8 @@ public class Program
                     output.Close();
                 }
                 response.Close();
+
+                //TODO - graceful shutdown 
             }
             listener.Stop();
         }
