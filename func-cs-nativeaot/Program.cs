@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Cache;
 
@@ -6,53 +7,60 @@ public class Program
 {
     public static void Main()
     {
-        var listenPort = Environment.GetEnvironmentVariable("FUNCTIONS_CUSTOMHANDLER_PORT");
-        if(String.IsNullOrEmpty(listenPort)) listenPort = "8080";
-        
-        //Console.WriteLine($"Port: {listenPort}");
-
-        // Create a listener.
-        using (HttpListener listener = new HttpListener())
+        try
         {
-            listener.Prefixes.Add($"http://*:{listenPort}/");
+            var listenPort = Environment.GetEnvironmentVariable("FUNCTIONS_CUSTOMHANDLER_PORT");
+            if (String.IsNullOrEmpty(listenPort)) listenPort = "8080";
 
-            listener.Start();
+            //Debug.WriteLine($"Port: {listenPort}");
 
-            Console.WriteLine($"➡️ Internal listener at {listener.Prefixes.FirstOrDefault()}");
-
-            while (listener.IsListening)
+            // Create a listener.
+            using (HttpListener listener = new HttpListener())
             {
-                // // Note: The GetContext method blocks while waiting for a request.
-                HttpListenerContext context = listener.GetContext();
-                Console.WriteLine("➡️ Request received");
-                HttpListenerRequest request = context.Request;
-                Console.WriteLine($"➡️ Raw URL: {request.RawUrl}");
-                Console.WriteLine($"➡️ Method: {request.HttpMethod}");
+                listener.Prefixes.Add($"http://*:{listenPort}/");
 
-                // // Obtain a response object.
-                HttpListenerResponse response = context.Response;
-                // // Construct a response.
-                response.StatusCode = 200;
-                // Console.WriteLine("➡️ Status code set");
-                string responseString = shared_logic.ClassThatDoesSomeWork.DoTheWork();
-                byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-                // Get a response stream and write the response to it.
-                response.ContentLength64 = buffer.Length;
-                using (var output = response.OutputStream)
+                listener.Start();
+                // Graceful shutdown?
+                Console.CancelKeyPress += (_, _) => { listener.Abort(); };
+                AppDomain.CurrentDomain.ProcessExit += (_, _) => { listener.Abort(); };
+
+                Debug.WriteLine($"➡️ Internal listener at {listener.Prefixes.FirstOrDefault()}");
+
+                while (listener.IsListening)
                 {
-                    output.Write(buffer, 0, buffer.Length);
-                    Console.WriteLine("➡️ Response written");
+                    // // Note: The GetContext method blocks while waiting for a request.
+                    HttpListenerContext context = listener.GetContext();
+                    Debug.WriteLine("➡️ Request received");
+                    HttpListenerRequest request = context.Request;
+                    Debug.WriteLine($"➡️ Raw URL: {request.RawUrl}");
+                    Debug.WriteLine($"➡️ Method: {request.HttpMethod}");
 
-                    // You must close the output stream.
-                    output.Flush();
-                    output.Close();
+                    // // Obtain a response object.
+                    HttpListenerResponse response = context.Response;
+                    // // Construct a response.
+                    response.StatusCode = 200;
+                    // Debug.WriteLine("➡️ Status code set");
+                    string responseString = shared_logic.ClassThatDoesSomeWork.DoTheWork();
+                    byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+                    // Get a response stream and write the response to it.
+                    response.ContentLength64 = buffer.Length;
+                    using (var output = response.OutputStream)
+                    {
+                        output.Write(buffer, 0, buffer.Length);
+                        Debug.WriteLine("➡️ Response written");
+
+                        // You must close the output stream.
+                        output.Flush();
+                        output.Close();
+                    }
+                    response.Close();
                 }
-                response.Close();
-
-                //TODO - graceful shutdown 
+                listener.Stop();
             }
-            listener.Stop();
         }
-
+        finally
+        {
+            Environment.Exit(0);
+        }
     }
 }
