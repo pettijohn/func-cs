@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-for i in {0..100}
+for i in {0..50}
 do
     # Clean up - kill the function host & native process
     kill -9 `ps -aux | grep func | grep 7073 | grep -v grep | awk '{print $2'}`
