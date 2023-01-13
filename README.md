@@ -35,7 +35,7 @@ The Function executes ClassThatDoesSomeWork once.
 | func-cs-nativeaot | 277.66 |
 
 ### Result Set 2 - Computationally Expensive
-The Function executes ClassThatDoesSomeWork *ten thousnd times times* and returns the last result.
+The Function executes ClassThatDoesSomeWork *ten thousand times times* and returns the last result.
 
 | Method | Average response (ms) 5k runs | StdDev |
 |-|-|-|
