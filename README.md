@@ -2,7 +2,7 @@
 
 ## Or, How to run .NET 7 Native AOT in an Azure Function (and is it a good idea?)
 
-**TL;DR: For C#, .NET 6 In-Process appears to be the best choice - performance is the best, and it is a a fully-featured, supported out-of-box solution. Native AOT *may* have cold start benefits, and *may* be better in computationally-expensive scenarios, but you'll have to roll your own HTTP listener, router, etc.**
+**TL;DR: For C#, .NET 6 In-Process appears to be the best choice - performance is the best, and it is a a fully-featured, supported out-of-box solution. Native AOT *may* have cold start benefits, and *may* be better in certain workloads, but you'll have to roll your own HTTP listener, router, etc.**
 
 This repository explores the performance of Azure Functions and their various hosting models, [In-Process .NET6](https://learn.microsoft.com/en-us/azure/azure-functions/functions-dotnet-class-library), [Isolated .NET7](https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide), and [Custom](https://learn.microsoft.com/en-us/azure/azure-functions/create-first-function-vs-code-other#create-and-build-your-function) using .NET 7.0 Native AOT. 
 
@@ -16,7 +16,11 @@ The `shared-logic` project targets net6.0 and net7.0, and uses source generation
 
 Average of 10,000 iterations each, includes cold & warm. Functions called in round robin (one call to each, then repeat) in case the CPU throttles as the test drags on. Cold start table is fifty invocation of each method (restart the `func` process each time). I repeated these tests and, while the numbers varied from run to run, the pattern held true: inproc was fastest, native was slightly slower, and isolated was a bit slower yet. 
 
-I assume that In-Process wins because, despite Native AOT's performance benefits, In-Process can just pass an object pointer for each function call as opposed to the overhead of out-of-process HTTP over a pipe. Native AOT *may* be a better fit for cases where the compute cost is considerably higher than the cost of out-of-process HTTP. I also didn't measure memory consumption, so Native AOT *may* be less expensive in some cases as well. 
+I assume that In-Process wins because, despite Native AOT's performance benefits, In-Process can just pass an object pointer for each function call as opposed to the overhead of out-of-process HTTP over a pipe. I don't know why, in my expensive scenario, which runs the same computation in a loop, in-proc does so well. Native AOT *may* be a better fit for cases where the compute cost is considerably higher than the cost of out-of-process HTTP. I also didn't measure memory consumption, so Native AOT *may* be less expensive in some cases as well. 
+
+### Result set 1 - Typical CRUD API compute
+
+The Function executes ClassThatDoesSomeWork once.
 
 | Method | Average response (ms) 10k runs | StdDev |
 |-|-|-|
@@ -29,6 +33,15 @@ I assume that In-Process wins because, despite Native AOT's performance benefits
 | func-cs-inproc    | 280.39 |
 | func-cs-isolated  | 544.15 |
 | func-cs-nativeaot | 277.66 |
+
+### Result Set 2 - Computationally Expensive
+The Function executes ClassThatDoesSomeWork *ten thousnd times times* and returns the last result.
+
+| Method | Average response (ms) 5k runs | StdDev |
+|-|-|-|
+| func-cs-inproc    | 90.80 | 8.22 |
+| func-cs-isolated  | 324.00 | 46.29 |
+| func-cs-nativeaot | 343.27 | 47.27 | 
 
 Caveats: These tests were run with the [local functions tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local) on a Windows laptop under WSL2. Who knows what noise there is in the data or how this would behave on Azure's servers. If your function is most often called cold, you may wish to further explore the potential cold start benefits of Native AOT. 
 
