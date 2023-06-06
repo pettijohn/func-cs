@@ -56,6 +56,7 @@ dotnet publish -c Release -r linux-x64
 # Start Azure Function 
 func start 
 func start --port 7071
+func start --port 7071 --dotnet-cli-params -- "--configuration Release"
 ```
 
 ## References

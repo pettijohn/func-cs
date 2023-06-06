@@ -24,6 +24,7 @@ internal partial class SourceGenerationContext : JsonSerializerContext
 
 public static class ClassThatDoesSomeWork
 {
+    public static Random rng = new Random();
     public static string DoTheWork()
     {
         var iterations = 10000;
@@ -37,7 +38,7 @@ public static class ClassThatDoesSomeWork
             var net = "7.0";
 #endif
             // Create an object
-            var dims = new Dimensions() { Height = 4.5, Width = 6.7, Depth = 8.9 };
+            var dims = new Dimensions() { Height = rng.NextDouble(), Width = rng.NextDouble(), Depth = rng.NextDouble() };
 
 
             // Serialize it to JSON
